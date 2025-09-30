@@ -201,7 +201,7 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
       const uploadResponse = await SupabaseService.uploadRecording({
         file,
         deviceId: appState.device.deviceId,
-        speakerName: appState.speaker.displayName,
+        speakerName: session.speaker.displayName,
         lineId: currentLine.id,
         lineIndex: session.currentIndex,
         lineText: currentLine.text,

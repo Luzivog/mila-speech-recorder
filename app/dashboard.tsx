@@ -80,7 +80,7 @@ export default function DashboardScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: dark ? '#0f172a' : '#f8fafc' }]}>
       <SafeAreaView style={styles.content}>
-        <DashboardHeader speakerName={appState?.speaker?.displayName} />
+  <DashboardHeader speakerName={session.speaker.displayName} />
 
         <QuickActions
           onGoRecord={() => router.push('/record')}
@@ -117,7 +117,7 @@ export default function DashboardScreen() {
         <SessionSection
           lineCount={session.lines.length}
           recordingCount={recordedCount}
-          speakerName={appState?.speaker?.displayName || 'Not set'}
+          speakerName={session.speaker.displayName || 'Not set'}
         />
 
         <TipsSection />

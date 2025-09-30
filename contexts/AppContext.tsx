@@ -10,10 +10,32 @@ interface AppContextType {
   appState: AppState | null;
   isLoading: boolean;
   updateDevice: (device: DeviceProfile) => Promise<void>;
-  updateSpeaker: (speaker: SpeakerProfile) => Promise<void>;
   updateSession: (session: ActiveSession | null) => Promise<void>;
   clearSession: () => Promise<void>;
 }
+
+const ensureSpeaker = (speaker?: Partial<SpeakerProfile> | null): SpeakerProfile => {
+  const now = Date.now();
+  return {
+    id: speaker?.id ?? uuidv4(),
+    displayName: speaker?.displayName ?? '',
+    localeHint: speaker?.localeHint,
+    createdAt: speaker?.createdAt ?? now,
+    updatedAt: speaker?.updatedAt ?? now,
+  };
+};
+
+const ensureSession = (
+  session: ActiveSession | null | undefined,
+  fallbackSpeaker?: SpeakerProfile | null
+): ActiveSession | null => {
+  if (!session) return null;
+  const speakerSource = session.speaker ?? fallbackSpeaker ?? null;
+  return {
+    ...session,
+    speaker: ensureSpeaker(speakerSource),
+  };
+};
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -33,7 +55,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = await AsyncStorage.getItem(APP_STATE_KEY);
       if (stored) {
-        const parsedState: AppState = JSON.parse(stored);
+        const parsedState = JSON.parse(stored) as AppState & { speaker?: SpeakerProfile | null };
 
         // Ensure device exists, create if not
         if (!parsedState.device) {
@@ -43,30 +65,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           };
         }
 
-        // Ensure speaker exists
-        if (!parsedState.speaker) {
-          parsedState.speaker = {
-            id: uuidv4(),
-            displayName: '',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          };
-        }
+        const normalizedSession = ensureSession(parsedState.session, parsedState.speaker);
+        const nextState: AppState = {
+          device: parsedState.device,
+          session: normalizedSession,
+        };
 
-        // Do not coerce language to empty string; keep as-is so UI can enforce required value
-        setAppState(parsedState);
+        setAppState(nextState);
+        await saveAppState(nextState);
       } else {
         // Create initial state
         const initialState: AppState = {
           device: {
             deviceId: uuidv4(),
             createdAt: Date.now(),
-          },
-          speaker: {
-            id: uuidv4(),
-            displayName: '',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
           },
           session: null,
         };
@@ -80,12 +92,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         device: {
           deviceId: uuidv4(),
           createdAt: Date.now(),
-        },
-        speaker: {
-          id: uuidv4(),
-          displayName: '',
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
         },
         session: null,
       };
@@ -107,16 +113,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await saveAppState(newState);
   };
 
-  const updateSpeaker = async (speaker: SpeakerProfile) => {
-    if (!appState) return;
-    const newState = { ...appState, speaker };
-    setAppState(newState);
-    await saveAppState(newState);
-  };
-
   const updateSession = async (session: ActiveSession | null) => {
     if (!appState) return;
-    const newState = { ...appState, session };
+    const normalizedSession = ensureSession(session, appState.session?.speaker);
+    const newState = { ...appState, session: normalizedSession };
     setAppState(newState);
     await saveAppState(newState);
   };
@@ -132,7 +132,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     appState,
     isLoading,
     updateDevice,
-    updateSpeaker,
     updateSession,
     clearSession,
   };

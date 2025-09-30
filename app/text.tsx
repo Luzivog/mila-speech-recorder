@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -22,12 +22,31 @@ import { TextInputSection } from '../components/screens/text/TextInputSection';
 import { useApp } from '../contexts/AppContext';
 
 export default function TextScreen() {
-  const { appState, updateSpeaker, updateSession } = useApp();
+  const { appState, updateSession } = useApp();
   const [rawText, setRawText] = useState(appState?.session?.rawText || '');
-  const [speakerName, setSpeakerName] = useState(appState?.speaker?.displayName || '');
+  const [speakerName, setSpeakerName] = useState(appState?.session?.speaker?.displayName || '');
   const [language, setLanguage] = useState(appState?.session?.language || '');
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
+  const session = appState?.session ?? null;
+  const sessionRawText = session?.rawText ?? '';
+  const sessionLanguage = session?.language ?? '';
+  const sessionSpeakerName = session?.speaker?.displayName ?? '';
+
+  useEffect(() => {
+    setSpeakerName(prev => (prev === sessionSpeakerName ? prev : sessionSpeakerName));
+  }, [sessionSpeakerName]);
+
+  useEffect(() => {
+    if (!session) {
+      setRawText('');
+      setLanguage('');
+      return;
+    }
+
+    setRawText(prev => (prev === sessionRawText ? prev : sessionRawText));
+    setLanguage(prev => (prev === sessionLanguage ? prev : sessionLanguage));
+  }, [session, sessionRawText, sessionLanguage]);
 
   const parseText = (text: string) => {
     const lines = text
@@ -97,14 +116,21 @@ export default function TextScreen() {
     };
 
     try {
-      // Update speaker if changed
-      if (speakerName !== appState.speaker.displayName) {
-        await updateSpeaker({
-          ...appState.speaker,
-          displayName: speakerName,
-          updatedAt: Date.now(),
-        });
-      }
+      const trimmedSpeaker = speakerName.trim();
+      const now = Date.now();
+      const nextSpeaker = session?.speaker
+        ? {
+            ...session.speaker,
+            displayName: trimmedSpeaker,
+            updatedAt: now,
+          }
+        : {
+            id: uuidv4(),
+            displayName: trimmedSpeaker,
+            createdAt: now,
+            updatedAt: now,
+          };
+      setSpeakerName(trimmedSpeaker);
 
       // Create new session
       const newSession = {
@@ -114,6 +140,7 @@ export default function TextScreen() {
         recordings: {}, // Clear previous recordings for new session
         lastVisitedAt: Date.now(),
         language: lang,
+        speaker: nextSpeaker,
         parseMeta: {
           totalLines: parsed.totalLines,
           emptyLinesSkipped: parsed.emptyLinesSkipped,

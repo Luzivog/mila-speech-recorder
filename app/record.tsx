@@ -49,7 +49,7 @@ export default function RecordScreen() {
         <View style={styles.topSection}>
           <ProgressDisplay
             progressText={progressText}
-            speakerName={appState.speaker.displayName}
+            speakerName={session.speaker.displayName}
           />
         </View>
 

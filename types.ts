@@ -50,6 +50,7 @@ export interface ActiveSession {
   recordings: Record<string, RecordingItem>; // map by lineId
   lastVisitedAt: number; // epoch ms
   language: string; // required user-provided language label or code
+  speaker: SpeakerProfile;
   parseMeta: {
     totalLines: number;
     emptyLinesSkipped: number;
@@ -58,7 +59,6 @@ export interface ActiveSession {
 
 export interface AppState {
   device: DeviceProfile;
-  speaker: SpeakerProfile;
   session: ActiveSession | null;
 }
 
