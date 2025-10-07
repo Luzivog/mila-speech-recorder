@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { FileText } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 
@@ -13,7 +13,7 @@ export function TextHeader({ hasText, lineCount }: TextHeaderProps) {
   return (
     <View style={[styles.wrapper, { backgroundColor: dark ? '#0f172a' : '#f1f5f9' }]}> 
       <View style={[styles.iconBadge, { backgroundColor: dark ? '#1e293b' : '#e2e8f0' }]}> 
-        <Ionicons name="document-text" size={32} color={dark ? '#93c5fd' : '#1d3557'} />
+  <FileText size={32} color={dark ? '#93c5fd' : '#1d3557'} />
       </View>
       <Text style={[styles.title, { color: dark ? '#f1f5f9' : '#1d3557' }]}>Text Input</Text>
       <Text style={[styles.subtitle, { color: dark ? '#94a3b8' : '#475569' }]}> 

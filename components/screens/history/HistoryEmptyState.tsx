@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { Clock3, FileText, Mic } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -45,7 +45,7 @@ export function HistoryEmptyState({ hasSession, onGoRecord, onGoText }: HistoryE
       <Animated.View style={[styles.iconHalo, { transform: [{ scale }] }]}> 
         <Animated.View style={[styles.haloRing, { opacity: ringOpacity, borderColor: dark ? '#3b82f6' : '#2563eb' }]} />
         <View style={[styles.iconBadge, { backgroundColor: dark ? '#1e293b' : '#ffffff', shadowColor: dark ? '#1e293b' : '#2563eb' }]}> 
-          <Ionicons name="time" size={40} color={dark ? '#93c5fd' : '#1d3557'} />
+          <Clock3 size={40} color={dark ? '#93c5fd' : '#1d3557'} />
         </View>
       </Animated.View>
 
@@ -62,7 +62,7 @@ export function HistoryEmptyState({ hasSession, onGoRecord, onGoText }: HistoryE
           onPress={handlePressText}
           activeOpacity={0.85}
         >
-          <Ionicons name="document-text" size={18} color={dark ? '#93c5fd' : '#2563eb'} style={{ marginRight: 6 }} />
+          <FileText size={18} color={dark ? '#93c5fd' : '#2563eb'} style={{ marginRight: 6 }} />
           <Text style={[styles.secondaryText, { color: dark ? '#93c5fd' : '#2563eb' }]}>Add Text</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -70,7 +70,7 @@ export function HistoryEmptyState({ hasSession, onGoRecord, onGoText }: HistoryE
           onPress={handlePressRecord}
           activeOpacity={0.85}
         >
-          <Ionicons name="mic" size={18} color="#fff" style={{ marginRight: 8 }} />
+          <Mic size={18} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.primaryText}>Record Now</Text>
         </TouchableOpacity>
       </View>

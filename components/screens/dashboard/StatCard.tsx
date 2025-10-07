@@ -1,16 +1,18 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import { BarChart3 } from 'lucide-react-native';
+import React, { type ComponentType } from 'react';
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
+
+type IconComponentType = ComponentType<{ color?: string; size?: number; style?: any }>;
 
 interface StatCardProps {
   title: string;
   value: string;
   subtitle?: string;
-  icon?: keyof typeof Ionicons.glyphMap;
+  IconComponent?: IconComponentType;
   accent?: string; // optional override color
 }
 
-export function StatCard({ title, value, subtitle, icon = 'stats-chart', accent }: StatCardProps) {
+export function StatCard({ title, value, subtitle, IconComponent = BarChart3, accent }: StatCardProps) {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const baseAccent = accent || (dark ? '#3b82f6' : '#2563eb');
@@ -18,7 +20,7 @@ export function StatCard({ title, value, subtitle, icon = 'stats-chart', accent 
   return (
     <View style={[styles.card, { backgroundColor: bg, shadowColor: baseAccent }]}> 
       <View style={[styles.iconBadge, { backgroundColor: `${baseAccent}1A` }]}> 
-        <Ionicons name={icon} size={22} color={baseAccent} />
+        <IconComponent size={22} color={baseAccent} />
       </View>
       <Text style={[styles.title, { color: dark ? '#94a3b8' : '#64748b' }]}>{title}</Text>
       <Text style={[styles.value, { color: dark ? '#f1f5f9' : '#1d3557' }]}>{value}</Text>

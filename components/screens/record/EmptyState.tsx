@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { FileText, Mic } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -51,7 +51,7 @@ export function EmptyState({ onPressGoToText }: EmptyStateProps) {
 
       <View style={styles.contentContainer}>
         <Animated.View style={[styles.iconWrapper, { transform: [{ scale }], opacity, backgroundColor: dark ? '#1e293b' : '#f1f5f9' }]}> 
-          <Ionicons name="mic" size={64} color={dark ? '#93c5fd' : '#1d3557'} />
+          <Mic size={64} color={dark ? '#93c5fd' : '#1d3557'} />
         </Animated.View>
         <Text style={[styles.title, { color: dark ? '#f1f5f9' : '#1d3557' }]}>Ready to start recording?</Text>
         <Text style={[styles.subtitle, { color: dark ? '#cbd5e1' : '#475569' }]}>
@@ -72,7 +72,7 @@ export function EmptyState({ onPressGoToText }: EmptyStateProps) {
           onPress={handlePress}
           activeOpacity={0.8}
         >
-          <Ionicons name="document-text" size={22} color="#fff" style={{ marginRight: 6 }} />
+          <FileText size={22} color="#fff" style={{ marginRight: 6 }} />
           <Text style={styles.ctaText}>Add Text to Begin</Text>
         </TouchableOpacity>
   <Text style={[styles.helperNote, { color: dark ? '#64748b' : '#64748b' }]}>Need inspiration? Paste song lyrics, proverbs, or any clean text.</Text>

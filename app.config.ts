@@ -51,6 +51,8 @@ const config: ExpoConfig = {
         },
       },
     ],
+    ['expo-font', { fonts: ['./assets/fonts/WorkSans.ttf'] }],
+    'expo-asset'
   ],
   experiments: {
     typedRoutes: true,

@@ -1,63 +1,72 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { ChartLine, FileText, History, Mic } from 'lucide-react-native';
+import { useEffect } from "react";
 import { AppProvider } from "../contexts/AppContext";
 
+SplashScreen.preventAutoHideAsync().catch(() => null);
+
 export default function RootLayout() {
+
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => null);
+  }, []);
+
   return (
     <AppProvider>
-        <Tabs
-          screenOptions={{
-            tabBarActiveTintColor: '#007AFF',
-            tabBarInactiveTintColor: '#8E8E93',
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: '#8E8E93',
+        }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            href: null, // Hide from tab bar
           }}
-        >
-          <Tabs.Screen
-            name="index"
-            options={{
-              href: null, // Hide from tab bar
-            }}
-          />
-          <Tabs.Screen
-            name="record"
-            options={{
-              title: "Record",
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="mic" color={color} size={size} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="text"
-            options={{
-              title: "Text",
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="document-text" color={color} size={size} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="history"
-            options={{
-              title: "History",
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="time" color={color} size={size} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="dashboard"
-            options={{
-              title: "Dashboard",
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="bar-chart" color={color} size={size} />
-              ),
-            }}
-          />
-        </Tabs>
+        />
+        <Tabs.Screen
+          name="record"
+          options={{
+            title: "Record",
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <Mic color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="text"
+          options={{
+            title: "Text",
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <FileText color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="history"
+          options={{
+            title: "History",
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <History color={color} size={size} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="dashboard"
+          options={{
+            title: "Dashboard",
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => (
+              <ChartLine color={color} size={size} />
+            ),
+          }}
+        />
+      </Tabs>
     </AppProvider>
   );
 }

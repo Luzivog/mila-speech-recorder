@@ -32,7 +32,7 @@ export default function HistoryScreen() {
       line,
       recording: recordings[line.id],
       language: session?.language || '',
-    })) ?? [];
+    }))?.reverse() ?? [];
 
   // Derive the URI we want to play
   const playingUri = useMemo(

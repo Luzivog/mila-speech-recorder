@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import React from 'react';
+import { FileText, History, Mic } from 'lucide-react-native';
+import React, { type ComponentType } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 interface QuickActionsProps {
@@ -24,21 +24,21 @@ export function QuickActions({ onGoRecord, onGoText, onGoHistory }: QuickActions
     <View style={styles.wrapper}>
       <ActionButton
         label="Record"
-        icon="mic"
+        Icon={Mic}
         onPress={makePress(onGoRecord, Haptics.ImpactFeedbackStyle.Medium)}
         accent={dark ? '#3b82f6' : '#2563eb'}
         background={bg}
       />
       <ActionButton
         label="Add Text"
-        icon="document-text"
+        Icon={FileText}
         onPress={makePress(onGoText)}
         accent={dark ? '#10b981' : '#16a34a'}
         background={bg}
       />
       <ActionButton
         label="History"
-        icon="time"
+        Icon={History}
         onPress={makePress(onGoHistory)}
         accent={dark ? '#f59e0b' : '#d97706'}
         background={bg}
@@ -47,19 +47,25 @@ export function QuickActions({ onGoRecord, onGoText, onGoHistory }: QuickActions
   );
 }
 
+type IconComponentType = ComponentType<{ color?: string; size?: number; style?: any }>;
+
 interface ActionButtonProps {
   label: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  Icon: IconComponentType;
   onPress: () => void;
   accent: string;
   background: string;
 }
 
-function ActionButton({ label, icon, onPress, accent, background }: ActionButtonProps) {
+function ActionButton({ label, Icon, onPress, accent, background }: ActionButtonProps) {
   return (
-    <TouchableOpacity style={[styles.actionButton, { backgroundColor: background, shadowColor: accent }]} onPress={onPress} activeOpacity={0.85}>
-      <View style={[styles.iconBadge, { backgroundColor: accent + '1A' }]}> 
-        <Ionicons name={icon} size={20} color={accent} />
+    <TouchableOpacity
+      style={[styles.actionButton, { backgroundColor: background, shadowColor: accent }]}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
+      <View style={[styles.iconBadge, { backgroundColor: accent + '1A' }]}>
+        <Icon size={20} color={accent} />
       </View>
       <Text style={[styles.actionLabel, { color: accent }]}>{label}</Text>
     </TouchableOpacity>

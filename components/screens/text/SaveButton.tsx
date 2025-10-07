@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Save } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, useColorScheme } from 'react-native';
 
@@ -26,7 +26,7 @@ export function SaveButton({ onPress, disabled }: SaveButtonProps) {
       disabled={disabled}
       activeOpacity={0.85}
     >
-      <Ionicons name="save" size={18} color="#fff" style={{ marginRight: 8 }} />
+  <Save size={18} color="#fff" style={{ marginRight: 8 }} />
       <Text style={styles.primaryButtonText}>Save & Parse</Text>
     </TouchableOpacity>
   );

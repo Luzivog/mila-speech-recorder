@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { FileText, Mic, Sparkles } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -38,17 +38,17 @@ export function DashboardEmptyState({ onAddText, onRecord }: DashboardEmptyState
       <View style={[styles.blobTwo, { backgroundColor: dark ? 'rgba(14,165,233,0.12)' : 'rgba(14,165,233,0.14)' }]} />
       <Animated.View style={[styles.glow, { opacity: glowOpacity, transform: [{ scale }], backgroundColor: dark ? '#1e3a8a' : '#2563eb' }]} />
       <View style={[styles.iconBadge, { backgroundColor: dark ? '#1e293b' : '#ffffff', shadowColor: dark ? '#1e293b' : '#2563eb' }]}> 
-        <Ionicons name="sparkles" size={46} color={dark ? '#93c5fd' : '#2563eb'} />
+        <Sparkles size={46} color={dark ? '#93c5fd' : '#2563eb'} />
       </View>
       <Text style={[styles.title, { color: dark ? '#f1f5f9' : '#1d3557' }]}>Welcome</Text>
   <Text style={[styles.subtitle, { color: dark ? '#94a3b8' : '#475569' }]}>Get started by adding text and begin recording high-quality speech data.</Text>
       <View style={styles.actionsRow}>
         <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: dark ? '#1e293b' : '#e2e8f0' }]} onPress={press(onAddText, Haptics.ImpactFeedbackStyle.Light)} activeOpacity={0.85}>
-          <Ionicons name="document-text" size={18} color={dark ? '#93c5fd' : '#2563eb'} style={{ marginRight: 6 }} />
+          <FileText size={18} color={dark ? '#93c5fd' : '#2563eb'} style={{ marginRight: 6 }} />
           <Text style={[styles.secondaryText, { color: dark ? '#93c5fd' : '#2563eb' }]}>Add Text</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.primaryButton, { backgroundColor: dark ? '#3b82f6' : '#2563eb', shadowColor: dark ? '#1e40af' : '#2563eb' }]} onPress={press(onRecord)} activeOpacity={0.85}>
-          <Ionicons name="mic" size={18} color="#fff" style={{ marginRight: 8 }} />
+          <Mic size={18} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.primaryText}>Record</Text>
         </TouchableOpacity>
       </View>

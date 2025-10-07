@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Languages } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, useColorScheme } from 'react-native';
 
@@ -23,7 +23,7 @@ export function LanguageInput({ value, onChangeText }: LanguageInputProps) {
           },
         ]}
       >
-        <Ionicons name="language" size={22} color={dark ? '#64748b' : '#6c757d'} style={{ marginRight: 8 }} />
+  <Languages size={22} color={dark ? '#64748b' : '#6c757d'} style={{ marginRight: 8 }} />
         <TextInput
           style={[styles.input, { color: dark ? '#f1f5f9' : '#212529' }]}
           value={value}

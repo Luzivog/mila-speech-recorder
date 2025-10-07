@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { List } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, View, useColorScheme } from 'react-native';
 
@@ -19,7 +19,7 @@ export function PreviewSection({ lines }: PreviewSectionProps) {
   return (
     <View style={[styles.previewSection, { backgroundColor: dark ? 'rgba(30,41,59,0.6)' : 'rgba(255,255,255,0.6)', borderColor: dark ? '#334155' : '#e2e8f0' }]}> 
       <View style={styles.previewHeaderRow}>
-        <Ionicons name="list" size={18} color={dark ? '#93c5fd' : '#2563eb'} style={{ marginRight: 6 }} />
+  <List size={18} color={dark ? '#93c5fd' : '#2563eb'} style={{ marginRight: 6 }} />
         <Text style={[styles.previewTitle, { color: dark ? '#f1f5f9' : '#1d3557' }]}>Preview (first 3 lines)</Text>
       </View>
       {lines.slice(0, 3).map((line, index) => (

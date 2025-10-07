@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { Clock3, Mic } from 'lucide-react-native';
 import React from 'react';
 import {
   ScrollView,
@@ -9,10 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DashboardEmptyState } from '../components/screens/dashboard/DashboardEmptyState';
 import { DashboardHeader } from '../components/screens/dashboard/DashboardHeader';
-import { MessageSection } from '../components/screens/dashboard/MessageSection';
-import { ProgressSection } from '../components/screens/dashboard/ProgressSection';
 import { QuickActions } from '../components/screens/dashboard/QuickActions';
-import { SessionSection } from '../components/screens/dashboard/SessionSection';
 import { StatCard } from '../components/screens/dashboard/StatCard';
 import { TipsSection } from '../components/screens/dashboard/TipsSection';
 import { useApp } from '../contexts/AppContext';
@@ -47,22 +45,6 @@ export default function DashboardScreen() {
   const stats = calculateStats();
   const session = appState?.session;
 
-
-  const getProgressColor = (percent: number) => {
-    if (percent >= 80) return '#28a745';
-    if (percent >= 50) return '#ffc107';
-    return '#dc3545';
-  };
-
-  const getMotivationalMessage = () => {
-    const percent = stats.progressPercent;
-    if (percent === 100) return '🎉 Fantastic! All lines recorded!';
-    if (percent >= 80) return '🚀 Almost there—finish strong!';
-    if (percent >= 50) return '💪 Over halfway—keep momentum!';
-    if (percent >= 25) return '📈 Nice start—keep recording!';
-    return '🎯 Begin recording to build your dataset!';
-  };
-
   // Empty state if no session
   if (!session) {
     return (
@@ -88,37 +70,22 @@ export default function DashboardScreen() {
           onGoHistory={() => router.push('/history')}
         />
 
-        <ProgressSection
-          progressPercent={stats.progressPercent}
-          totalLines={session.lines.length}
-          recordedCount={recordedCount}
-          progressColor={getProgressColor(stats.progressPercent)}
-        />
-
         <View style={styles.statsRow}> 
           <StatCard
             title="Recorded"
             value={recordedCount.toString()}
             subtitle="clips"
-            icon="mic"
+            IconComponent={Mic}
             accent={dark ? '#3b82f6' : '#2563eb'}
           />
           <StatCard
             title="Duration"
             value={Math.round(stats.totalDurationValidatedSec / 60).toString() + 'm'}
             subtitle="total"
-            icon="time"
+            IconComponent={Clock3}
             accent={dark ? '#10b981' : '#16a34a'}
           />
         </View>
-
-        <MessageSection message={getMotivationalMessage()} />
-
-        <SessionSection
-          lineCount={session.lines.length}
-          recordingCount={recordedCount}
-          speakerName={session.speaker.displayName || 'Not set'}
-        />
 
         <TipsSection />
       </SafeAreaView>

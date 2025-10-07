@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Pause, Play, Trash2, UploadCloud } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -22,7 +22,7 @@ export function StoppedControls({ onCancel, onTogglePlayback, onValidate, isUplo
         onPress={onCancel}
         activeOpacity={0.85}
       >
-        <Ionicons name="trash" size={18} color={dark ? '#fecaca' : '#b91c1c'} style={{ marginRight: 6 }} />
+  <Trash2 size={18} color={dark ? '#fecaca' : '#b91c1c'} style={{ marginRight: 6 }} />
         <Text style={[styles.smallButtonText, { color: dark ? '#fecaca' : '#b91c1c' }]}>Cancel</Text>
       </TouchableOpacity>
 
@@ -33,7 +33,11 @@ export function StoppedControls({ onCancel, onTogglePlayback, onValidate, isUplo
         onPress={onTogglePlayback}
         activeOpacity={0.85}
       >
-        <Ionicons name={isPlaying ? 'pause' : 'play'} size={20} color="#fff" style={{ marginRight: 8 }} />
+        {isPlaying ? (
+          <Pause size={20} color="#fff" style={{ marginRight: 8 }} />
+        ) : (
+          <Play size={20} color="#fff" style={{ marginRight: 8 }} />
+        )}
         <Text style={styles.mainButtonText}>{isPlaying ? 'Pause' : 'Play'}</Text>
       </TouchableOpacity>
 
@@ -45,7 +49,7 @@ export function StoppedControls({ onCancel, onTogglePlayback, onValidate, isUplo
         disabled={isUploading}
         activeOpacity={0.85}
       >
-        <Ionicons name="cloud-upload" size={20} color="#fff" style={{ marginRight: 8 }} />
+  <UploadCloud size={20} color="#fff" style={{ marginRight: 8 }} />
         <Text style={styles.validateButtonText}>{isUploading ? 'Uploading...' : 'Validate'}</Text>
       </TouchableOpacity>
     </View>

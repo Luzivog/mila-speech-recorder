@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Clipboard, Trash2 } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -13,12 +13,12 @@ export function ActionButtons({ onPaste, onClear }: ActionButtonsProps) {
   return (
     <View style={styles.buttonRow}>
       <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: dark ? '#334155' : '#6c757d' }]} onPress={onPaste}>
-        <Ionicons name="clipboard" size={16} color="#fff" style={{ marginRight: 6 }} />
+  <Clipboard size={16} color="#fff" style={{ marginRight: 6 }} />
         <Text style={styles.secondaryButtonText}>Paste</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: dark ? '#475569' : '#6c757d' }]} onPress={onClear}>
-        <Ionicons name="trash" size={16} color="#fff" style={{ marginRight: 6 }} />
+  <Trash2 size={16} color="#fff" style={{ marginRight: 6 }} />
         <Text style={styles.secondaryButtonText}>Clear</Text>
       </TouchableOpacity>
     </View>

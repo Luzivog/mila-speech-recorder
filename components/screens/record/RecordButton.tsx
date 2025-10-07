@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Mic, Square } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
@@ -51,12 +51,11 @@ export function RecordButton({ text, backgroundColor, onPress, isRecording, disa
         onPress={onPress}
         style={[styles.recordButton, { backgroundColor, shadowOpacity: isRecording ? 0.4 : 0.25 }, disabled && { opacity: 0.5 }]}
       >
-        <Ionicons
-          name={isRecording ? 'stop' : 'mic'}
-          size={28}
-          color={dark ? '#f8fafc' : '#fff'}
-          style={{ marginRight: 10 }}
-        />
+        {isRecording ? (
+          <Square size={28} color={dark ? '#f8fafc' : '#fff'} style={{ marginRight: 10 }} />
+        ) : (
+          <Mic size={28} color={dark ? '#f8fafc' : '#fff'} style={{ marginRight: 10 }} />
+        )}
         <Text style={[styles.recordButtonText, { color: '#fff' }]}>{text}</Text>
       </TouchableOpacity>
     </View>

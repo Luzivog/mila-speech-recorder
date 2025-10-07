@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Gauge } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View, useColorScheme } from 'react-native';
 
@@ -31,7 +31,7 @@ export function DashboardHeader({ speakerName }: DashboardHeaderProps) {
         <View style={styles.iconStack}>
           <Animated.View style={[styles.pulseCircle, { opacity, transform: [{ scale }], backgroundColor: dark ? 'rgba(59,130,246,0.25)' : 'rgba(37,99,235,0.25)' }]} />
           <View style={[styles.iconBadge, { backgroundColor: dark ? '#1e293b' : '#ffffff', shadowColor: dark ? '#1e293b' : '#2563eb' }]}> 
-            <Ionicons name="speedometer" size={30} color={dark ? '#93c5fd' : '#2563eb'} />
+            <Gauge size={30} color={dark ? '#93c5fd' : '#2563eb'} />
           </View>
         </View>
         <View style={styles.textCol}>

@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Pencil } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, useColorScheme } from 'react-native';
 
@@ -21,8 +21,7 @@ export function TextInputSection({ value, onChangeText }: TextInputSectionProps)
           borderColor: focused ? (dark ? '#3b82f6' : '#2563eb') : (dark ? '#334155' : '#dee2e6'),
         },
       ]}>
-        <Ionicons
-          name="create-outline"
+        <Pencil
           size={22}
           color={dark ? '#64748b' : '#6c757d'}
           style={{ marginRight: 8, marginTop: 4 }}
