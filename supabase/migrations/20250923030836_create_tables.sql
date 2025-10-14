@@ -30,12 +30,12 @@ CREATE TABLE recordings (
     speaker_id UUID NOT NULL REFERENCES speakers(id),
     utterance_id UUID NOT NULL REFERENCES utterances(id),
     duration_sec REAL NOT NULL CHECK (duration_sec >= 0),
-    status TEXT NOT NULL CHECK (status IN ('recorded', 'validated')),
+    status TEXT NOT NULL CHECK (status IN ('recorded', 'saved')),
     storage_key TEXT NOT NULL,
     ext TEXT NOT NULL DEFAULT 'm4a',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(speaker_id, utterance_id, status) -- Ensures only one validated per speaker-utterance
+    UNIQUE(speaker_id, utterance_id, status) -- Ensures only one saved per speaker-utterance
 );
 
 -- Create index on recordings for performance

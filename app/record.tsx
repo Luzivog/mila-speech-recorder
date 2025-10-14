@@ -24,7 +24,7 @@ export default function RecordScreen() {
     isUploading,
     handleRecordPress,
     handleCancel,
-    handleValidate,
+    handleSave,
     handleTogglePlayback,
     isPlaying,
     dark,
@@ -63,11 +63,11 @@ export default function RecordScreen() {
             isUploading={isUploading}
             onRecordPress={handleRecordPress}
             onCancel={handleCancel}
-            onValidate={handleValidate}
+            onSave={handleSave}
             onTogglePlayback={handleTogglePlayback}
             isPlaying={isPlaying}
           />
-          <Text style={[styles.helperTip, { color: dark ? '#64748b' : '#475569' }]}>Speak clearly. Keep a steady pace. Tap Validate when satisfied.</Text>
+          <Text style={[styles.helperTip, { color: dark ? '#64748b' : '#475569' }]}>Speak clearly. Keep a steady pace. Tap Save when satisfied.</Text>
         </View>
       </SafeAreaView>
     </View>

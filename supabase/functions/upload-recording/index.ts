@@ -27,12 +27,11 @@ Deno.serve(async (req: Request) => {
     const lineId = formData.get('lineId') as string | null
     const lineIndexStr = formData.get('lineIndex') as string | null
     const lineText = (formData.get('lineText') as string | null) ?? ''
-  const durationSecStr = formData.get('durationSec') as string | null
-    const status = formData.get('status') as string | null
-  const languageRaw = (formData.get('language') as string | null) ?? null
+    const durationSecStr = formData.get('durationSec') as string | null
+    const languageRaw = (formData.get('language') as string | null) ?? null
 
-    // Validate required fields (null/undefined only)
-    if (!file || deviceId == null || lineId == null || lineIndexStr == null || durationSecStr == null || status == null) {
+    // Save required fields (null/undefined only)
+    if (!file || deviceId == null || lineId == null || lineIndexStr == null || durationSecStr == null) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -50,7 +49,7 @@ Deno.serve(async (req: Request) => {
     // Normalize speakerName (allow empty; fallback to 'default')
     const speakerName = (rawSpeakerName ?? '').trim() || 'default'
 
-    // Validate and parse values
+    // Save and parse values
     const lineIndex = parseInt(lineIndexStr, 10)
     const durationSec = parseFloat(durationSecStr)
 
@@ -63,13 +62,6 @@ Deno.serve(async (req: Request) => {
 
     if (isNaN(durationSec) || durationSec < 0 || durationSec > 120) {
       return new Response(JSON.stringify({ error: 'Invalid durationSec (must be 0-120)' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
-    }
-
-    if (!['recorded', 'validated'].includes(status)) {
-      return new Response(JSON.stringify({ error: 'Invalid status (must be "recorded" or "validated")' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       })
@@ -172,7 +164,8 @@ Deno.serve(async (req: Request) => {
 
     const utteranceId = utteranceData.id
 
-    // Insert recording (enforce unique validated per speaker-utterance)
+    // Insert recording (enforce unique saved per speaker-utterance)
+    // Upsert so a speaker/utterance pair maps to a single recording row.
     const { data: recordingData, error: recordingError } = await supabase
       .from('recordings')
       .insert({
@@ -180,22 +173,13 @@ Deno.serve(async (req: Request) => {
         speaker_id: speakerId,
         utterance_id: utteranceId,
         duration_sec: durationSec,
-        status: status,
         storage_key: storageKey,
-        ext: ext
+        ext: ext,
       })
       .select('id')
       .single()
 
     if (recordingError) {
-      // Check if it's a unique constraint violation for validated recordings
-      if (recordingError.code === '23505' && status === 'validated') {
-        console.error('Duplicate validated recording:', recordingError)
-        return new Response(JSON.stringify({ error: 'A validated recording already exists for this speaker and utterance' }), {
-          status: 409,
-          headers: { 'Content-Type': 'application/json' }
-        })
-      }
       console.error('Recording insert error:', recordingError)
       return new Response(JSON.stringify({ error: `Failed to insert recording: ${recordingError.message || recordingError}` }), {
         status: 500,

@@ -25,7 +25,7 @@ export function HistoryItem({
 }: HistoryItemProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'validated':
+      case 'saved':
         return '#28a745';
       case 'recorded':
         return '#ffc107';

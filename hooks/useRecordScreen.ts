@@ -19,7 +19,7 @@ interface UseRecordScreenLogicReturn {
   buttonColor: string;
   handleRecordPress: () => Promise<void>;
   handleCancel: () => Promise<void>;
-  handleValidate: () => Promise<void>;
+  handleSave: () => Promise<void>;
   handleTogglePlayback: () => Promise<void>;
   isPlaying: boolean;
   dark: boolean;
@@ -141,16 +141,16 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
   }, [isPlaying, play, pause, lastRecording?.uri]);
 
   const advanceToNextLine = useCallback(
-    async (validatedStatusUpdate: Partial<{ remote: any }>) => {
+    async (savedStatusUpdate: Partial<{ remote: any }>) => {
       if (!session?.lines?.length || !currentLine) return;
 
       const updatedRecordings = {
         ...session.recordings,
         [currentLine.id]: {
           ...session.recordings[currentLine.id],
-          status: 'validated' as RecordingStatus,
+          status: 'saved' as RecordingStatus,
           updatedAt: Date.now(),
-          ...validatedStatusUpdate,
+          ...savedStatusUpdate,
         },
       };
 
@@ -173,11 +173,11 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
     [session, currentLine, updateSession]
   );
 
-  const handleValidateLocally = useCallback(async () => {
+  const handleSaveLocally = useCallback(async () => {
     await advanceToNextLine({});
   }, [advanceToNextLine]);
 
-  const handleValidate = useCallback(async () => {
+  const handleSave = useCallback(async () => {
     if (!session || !currentLine || !lastRecording?.uri || !appState) return;
 
     setIsUploading(true);
@@ -206,7 +206,6 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
         lineIndex: session.currentIndex,
         lineText: currentLine.text,
         durationSec: lastRecording.durationSec,
-        status: 'validated',
         language: session.language,
       });
 
@@ -225,15 +224,15 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
         'Upload Failed',
         'Failed to upload recording to server. You can try again or continue with local storage only.',
         [
-          { text: 'Try Again', onPress: () => handleValidate() },
-          { text: 'Continue Locally', onPress: handleValidateLocally },
+          { text: 'Try Again', onPress: () => handleSave() },
+          { text: 'Continue Locally', onPress: handleSaveLocally },
         ]
       );
       setStep('stopped');
     } finally {
       setIsUploading(false);
     }
-  }, [session, currentLine, lastRecording, appState, advanceToNextLine, handleValidateLocally]);
+  }, [session, currentLine, lastRecording, appState, advanceToNextLine, handleSaveLocally]);
 
   const buttonText = useMemo(() => {
     switch (step) {
@@ -270,7 +269,7 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
     buttonColor,
     handleRecordPress,
     handleCancel,
-    handleValidate,
+    handleSave,
     handleTogglePlayback,
     isPlaying,
     dark,

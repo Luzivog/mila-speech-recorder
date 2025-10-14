@@ -5,12 +5,12 @@ import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-
 interface StoppedControlsProps {
   onCancel: () => void;
   onTogglePlayback: () => void;
-  onValidate: () => void;
+  onSave: () => void;
   isUploading: boolean;
   isPlaying: boolean;
 }
 
-export function StoppedControls({ onCancel, onTogglePlayback, onValidate, isUploading, isPlaying }: StoppedControlsProps) {
+export function StoppedControls({ onCancel, onTogglePlayback, onSave, isUploading, isPlaying }: StoppedControlsProps) {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   return (
@@ -43,14 +43,14 @@ export function StoppedControls({ onCancel, onTogglePlayback, onValidate, isUplo
 
       <TouchableOpacity
         accessibilityRole="button"
-        accessibilityLabel="Validate and upload recording"
-        style={[styles.validateButton, { backgroundColor: dark ? '#10b981' : '#16a34a' }, isUploading && { opacity: 0.6 } ]}
-        onPress={onValidate}
+        accessibilityLabel="Save and upload recording"
+        style={[styles.saveButton, { backgroundColor: dark ? '#10b981' : '#16a34a' }, isUploading && { opacity: 0.6 } ]}
+        onPress={onSave}
         disabled={isUploading}
         activeOpacity={0.85}
       >
   <UploadCloud size={20} color="#fff" style={{ marginRight: 8 }} />
-        <Text style={styles.validateButtonText}>{isUploading ? 'Uploading...' : 'Validate'}</Text>
+        <Text style={styles.saveButtonText}>{isUploading ? 'Uploading...' : 'Save'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -90,14 +90,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.4,
   },
-  validateButton: {
+  saveButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 22,
     borderRadius: 28,
   },
-  validateButtonText: {
+  saveButtonText: {
     color: '#fff',
     fontWeight: '700',
     letterSpacing: 0.5,

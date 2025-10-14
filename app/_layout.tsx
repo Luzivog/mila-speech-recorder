@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { ChartLine, FileText, History, Mic } from 'lucide-react-native';
+import { FileText, History, Mic, UserCircle } from 'lucide-react-native';
 import { useEffect } from "react";
 import { AppProvider } from "../contexts/AppContext";
 
@@ -57,12 +57,12 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="dashboard"
+          name="profile"
           options={{
-            title: "Dashboard",
+            title: "Profile",
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
-              <ChartLine color={color} size={size} />
+              <UserCircle color={color} size={size} />
             ),
           }}
         />

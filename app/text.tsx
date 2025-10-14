@@ -1,4 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useState } from 'react';
 import {
@@ -12,11 +14,9 @@ import 'react-native-get-random-values';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { v4 as uuidv4 } from 'uuid';
 import { ActionButtons } from '../components/screens/text/ActionButtons';
-import { LanguageInput } from '../components/screens/text/LanguageInput';
 import { ParseInfo } from '../components/screens/text/ParseInfo';
 import { PreviewSection } from '../components/screens/text/PreviewSection';
 import { SaveButton } from '../components/screens/text/SaveButton';
-import { SpeakerInput } from '../components/screens/text/SpeakerInput';
 import { TextHeader } from '../components/screens/text/TextHeader';
 import { TextInputSection } from '../components/screens/text/TextInputSection';
 import { useApp } from '../contexts/AppContext';
@@ -24,29 +24,20 @@ import { useApp } from '../contexts/AppContext';
 export default function TextScreen() {
   const { appState, updateSession } = useApp();
   const [rawText, setRawText] = useState(appState?.session?.rawText || '');
-  const [speakerName, setSpeakerName] = useState(appState?.session?.speaker?.displayName || '');
-  const [language, setLanguage] = useState(appState?.session?.language || '');
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const session = appState?.session ?? null;
+  const profile = appState?.profile ?? null;
   const sessionRawText = session?.rawText ?? '';
-  const sessionLanguage = session?.language ?? '';
-  const sessionSpeakerName = session?.speaker?.displayName ?? '';
-
-  useEffect(() => {
-    setSpeakerName(prev => (prev === sessionSpeakerName ? prev : sessionSpeakerName));
-  }, [sessionSpeakerName]);
 
   useEffect(() => {
     if (!session) {
       setRawText('');
-      setLanguage('');
       return;
     }
 
     setRawText(prev => (prev === sessionRawText ? prev : sessionRawText));
-    setLanguage(prev => (prev === sessionLanguage ? prev : sessionLanguage));
-  }, [session, sessionRawText, sessionLanguage]);
+  }, [session, sessionRawText]);
 
   const parseText = (text: string) => {
     const lines = text
@@ -84,11 +75,41 @@ export default function TextScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  const handleUploadFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'text/plain',
+        multiple: false,
+        copyToCacheDirectory: true,
+        base64: false,
+      });
+
+      if (result.canceled) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        return;
+      }
+
+      const asset = result.assets?.[0];
+      if (!asset?.uri) {
+        throw new Error('Missing file asset URI');
+      }
+
+  const file = new File(asset.uri);
+  const fileContent = await file.text();
+
+      setRawText(fileContent);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Upload failed', 'We could not read that text file. Please try a different .txt file.');
+    }
+  };
+
 
   const handleSaveAndParse = async () => {
     if (!appState) return;
     const trimmed = rawText.trim();
-    const lang = language.trim();
 
     if (!trimmed) {
       if (appState.session) {
@@ -109,28 +130,24 @@ export default function TextScreen() {
       return;
     }
 
-    // Language is required
-    if (!lang) {
-      Alert.alert('Missing language', 'Please enter the language before saving and parsing.');
+    if (!profile) {
+      Alert.alert('Profile required', 'Please set up your speaker details in the Profile tab before saving.');
       return;
-    };
+    }
+
+    const lang = profile.language.trim();
+    if (!lang) {
+      Alert.alert('Missing language', 'Please set your language in the Profile tab before saving and parsing.');
+      return;
+    }
 
     try {
-      const trimmedSpeaker = speakerName.trim();
       const now = Date.now();
-      const nextSpeaker = session?.speaker
-        ? {
-            ...session.speaker,
-            displayName: trimmedSpeaker,
-            updatedAt: now,
-          }
-        : {
-            id: uuidv4(),
-            displayName: trimmedSpeaker,
-            createdAt: now,
-            updatedAt: now,
-          };
-      setSpeakerName(trimmedSpeaker);
+      const sessionSpeaker = {
+        ...profile.speaker,
+        displayName: profile.speaker.displayName.trim(),
+        updatedAt: now,
+      };
 
       // Create new session
       const newSession = {
@@ -138,9 +155,9 @@ export default function TextScreen() {
         lines: parsed.lines,
         currentIndex: 0,
         recordings: {}, // Clear previous recordings for new session
-        lastVisitedAt: Date.now(),
+        lastVisitedAt: now,
         language: lang,
-        speaker: nextSpeaker,
+        speaker: sessionSpeaker,
         parseMeta: {
           totalLines: parsed.totalLines,
           emptyLinesSkipped: parsed.emptyLinesSkipped,
@@ -150,7 +167,6 @@ export default function TextScreen() {
       await updateSession(newSession);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('Success', `Parsed ${parsed.lines.length} lines. Ready to record!`);
-
     } catch (error) {
       console.error('Error saving session:', error);
       Alert.alert('Error', 'Failed to save session');
@@ -158,21 +174,11 @@ export default function TextScreen() {
   };
 
   return (
-      <ScrollView style={[styles.container, { backgroundColor: dark ? '#0f172a' : '#f8fafc' }]}>
+      <ScrollView style={[styles.container, { backgroundColor: dark ? '#0f172a' : '#f8fafc' }]} showsVerticalScrollIndicator={false}>
         <View style={styles.bgDecoOne} />
         <View style={styles.bgDecoTwo} />
         <SafeAreaView style={styles.content}>
           <TextHeader hasText={!!rawText.trim()} lineCount={parsed.lines.length} />
-
-          <SpeakerInput
-            value={speakerName}
-            onChangeText={setSpeakerName}
-          />
-
-          <LanguageInput
-            value={language}
-            onChangeText={setLanguage}
-          />
 
           <TextInputSection
             value={rawText}
@@ -181,6 +187,7 @@ export default function TextScreen() {
 
           <ActionButtons
             onPaste={handlePaste}
+            onUpload={handleUploadFile}
             onClear={handleClear}
           />
 
@@ -193,8 +200,12 @@ export default function TextScreen() {
 
           {(() => {
             // Enable save when empty (to clear) OR when we have ≥1 parsed line.
-            const trimmed = rawText.trim();
-            const disableSave = (!!trimmed && parsed.lines.length === 0) || !language.trim(); // disabled if no valid lines or missing language
+            const trimmedText = rawText.trim();
+            const hasProfile = !!profile;
+            const hasLanguage = !!profile?.language?.trim();
+            const disableSave = trimmedText
+              ? !hasProfile || !hasLanguage || parsed.lines.length === 0
+              : false;
             return (
               <SaveButton
                 onPress={handleSaveAndParse}

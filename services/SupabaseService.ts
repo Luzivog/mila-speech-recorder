@@ -16,7 +16,7 @@ const supabase = createClient(supabaseUrl ?? '', supabaseAnonKey ?? '');
 
 export class SupabaseService {
   static async uploadRecording(request: UploadRequest): Promise<UploadResponse> {
-    const { file, deviceId, speakerName, lineId, lineIndex, lineText, durationSec, status, language } = request;
+    const { file, deviceId, speakerName, lineId, lineIndex, lineText, durationSec, language } = request;
 
     // Create FormData for multipart upload
     const formData = new FormData();
@@ -30,7 +30,6 @@ export class SupabaseService {
     formData.append('lineIndex', lineIndex.toString());
     formData.append('lineText', lineText);
     formData.append('durationSec', durationSec.toString());
-    formData.append('status', status);
     formData.append('language', language);
 
     // Call the edge function directly via fetch for reliable multipart support on native
@@ -54,7 +53,7 @@ export class SupabaseService {
       try {
         const j = JSON.parse(errText);
         errText = j.error || errText;
-      } catch { }
+  } catch {}
       throw new Error(`Upload failed: ${res.status} ${res.statusText} - ${errText}`);
     }
 

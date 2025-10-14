@@ -9,7 +9,6 @@ import {
 import { useCallback, useEffect } from 'react';
 import { Alert, Platform } from 'react-native';
 
-// Modern FileSystem API
 import { Directory, File, Paths } from 'expo-file-system';
 
 type StopResult = {

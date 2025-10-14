@@ -13,7 +13,7 @@ interface RecordingControlsProps {
   isUploading: boolean;
   onRecordPress: () => void;
   onCancel: () => void;
-  onValidate: () => void;
+  onSave: () => void;
   onTogglePlayback: () => void;
   isPlaying: boolean;
 }
@@ -25,7 +25,7 @@ export function RecordingControls({
   isUploading,
   onRecordPress,
   onCancel,
-  onValidate,
+  onSave,
   onTogglePlayback,
   isPlaying,
 }: RecordingControlsProps) {
@@ -44,7 +44,7 @@ export function RecordingControls({
           <StoppedControls
             onCancel={onCancel}
             onTogglePlayback={onTogglePlayback}
-            onValidate={onValidate}
+            onSave={onSave}
             isUploading={isUploading}
             isPlaying={isPlaying}
           />

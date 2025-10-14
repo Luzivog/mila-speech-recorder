@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { ActiveSession, AppState, DeviceProfile, SpeakerProfile } from '../types';
+import { ActiveSession, AppState, DeviceProfile, SpeakerProfile, UserProfile } from '../types';
 
 const APP_STATE_KEY = '@mila_speech_recorder_app_state';
 
@@ -11,6 +11,7 @@ interface AppContextType {
   isLoading: boolean;
   updateDevice: (device: DeviceProfile) => Promise<void>;
   updateSession: (session: ActiveSession | null) => Promise<void>;
+  updateProfile: (profile: UserProfile | null) => Promise<void>;
   clearSession: () => Promise<void>;
 }
 
@@ -39,6 +40,22 @@ const ensureSession = (
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const ensureProfile = (
+  profile: UserProfile | null | undefined,
+  fallbackSpeaker?: SpeakerProfile | null,
+  fallbackLanguage?: string | null
+): UserProfile | null => {
+  const speakerSource = profile?.speaker ?? fallbackSpeaker ?? null;
+  const language = profile?.language ?? fallbackLanguage ?? '';
+  if (!speakerSource && !language) {
+    return null;
+  }
+  return {
+    speaker: ensureSpeaker(speakerSource),
+    language,
+  };
+};
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [appState, setAppState] = useState<AppState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +72,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = await AsyncStorage.getItem(APP_STATE_KEY);
       if (stored) {
-        const parsedState = JSON.parse(stored) as AppState & { speaker?: SpeakerProfile | null };
+        const parsedState = JSON.parse(stored) as Partial<AppState> & {
+          speaker?: SpeakerProfile | null;
+          language?: string | null;
+        };
 
         // Ensure device exists, create if not
         if (!parsedState.device) {
@@ -65,9 +85,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           };
         }
 
-        const normalizedSession = ensureSession(parsedState.session, parsedState.speaker);
+        const normalizedProfile = ensureProfile(
+          parsedState.profile ?? null,
+          parsedState.session?.speaker ?? parsedState.speaker ?? null,
+          parsedState.profile?.language ?? parsedState.session?.language ?? parsedState.language ?? ''
+        );
+
+        const normalizedSession = ensureSession(
+          parsedState.session ?? null,
+          normalizedProfile?.speaker ?? parsedState.speaker ?? null
+        );
+
         const nextState: AppState = {
           device: parsedState.device,
+          profile: normalizedProfile,
           session: normalizedSession,
         };
 
@@ -80,6 +111,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             deviceId: uuidv4(),
             createdAt: Date.now(),
           },
+          profile: null,
           session: null,
         };
         setAppState(initialState);
@@ -93,6 +125,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           deviceId: uuidv4(),
           createdAt: Date.now(),
         },
+        profile: null,
         session: null,
       };
       setAppState(defaultState);
@@ -108,22 +141,65 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const updateDevice = async (device: DeviceProfile) => {
     if (!appState) return;
-    const newState = { ...appState, device };
+    const newState: AppState = { ...appState, device };
     setAppState(newState);
     await saveAppState(newState);
   };
 
   const updateSession = async (session: ActiveSession | null) => {
     if (!appState) return;
-    const normalizedSession = ensureSession(session, appState.session?.speaker);
-    const newState = { ...appState, session: normalizedSession };
+    const normalizedSession = ensureSession(
+      session,
+      session?.speaker ?? appState.profile?.speaker ?? appState.session?.speaker ?? null
+    );
+
+    const nextProfile = normalizedSession
+      ? ensureProfile(
+          { speaker: normalizedSession.speaker, language: normalizedSession.language },
+          normalizedSession.speaker,
+          normalizedSession.language
+        )
+      : appState.profile;
+
+    const newState: AppState = { ...appState, session: normalizedSession, profile: nextProfile };
+    setAppState(newState);
+    await saveAppState(newState);
+  };
+
+  const updateProfile = async (profile: UserProfile | null) => {
+    if (!appState) return;
+
+    const normalizedProfile = ensureProfile(
+      profile,
+      profile?.speaker ?? appState.profile?.speaker ?? appState.session?.speaker ?? null,
+      profile?.language ?? appState.profile?.language ?? appState.session?.language ?? ''
+    );
+
+    let session = appState.session;
+    if (normalizedProfile && session) {
+      session = ensureSession(
+        {
+          ...session,
+          speaker: normalizedProfile.speaker,
+          language: normalizedProfile.language,
+        },
+        normalizedProfile.speaker
+      );
+    }
+
+    const newState: AppState = {
+      ...appState,
+      profile: normalizedProfile,
+      session,
+    };
+
     setAppState(newState);
     await saveAppState(newState);
   };
 
   const clearSession = async () => {
     if (!appState) return;
-    const newState = { ...appState, session: null };
+    const newState: AppState = { ...appState, session: null };
     setAppState(newState);
     await saveAppState(newState);
   };
@@ -133,6 +209,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     updateDevice,
     updateSession,
+    updateProfile,
     clearSession,
   };
 

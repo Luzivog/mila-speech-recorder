@@ -13,13 +13,18 @@ export interface SpeakerProfile {
   updatedAt: number; // epoch ms
 }
 
+export interface UserProfile {
+  speaker: SpeakerProfile;
+  language: string;
+}
+
 export interface LineItem {
   id: string; // UUID (assign per parse; changes if the text is re-parsed)
   index: number; // 0-based integer position
   text: string; // non-empty trimmed string
 }
 
-export type RecordingStatus = 'none' | 'recorded' | 'validated';
+export type RecordingStatus = 'none' | 'recorded' | 'saved';
 
 export interface LocalRecording {
   lineId: string; // LineItem.id
@@ -59,13 +64,14 @@ export interface ActiveSession {
 
 export interface AppState {
   device: DeviceProfile;
+  profile: UserProfile | null;
   session: ActiveSession | null;
 }
 
 // Derived stats (compute from state; do not persist)
 export interface AppStats {
-  validatedCount: number;
-  totalDurationValidatedSec: number;
+  savedCount: number;
+  totalDurationSavedSec: number;
   progressPercent: number;
 }
 
@@ -92,6 +98,5 @@ export interface UploadRequest {
   lineIndex: number;
   lineText: string;
   durationSec: number;
-  status: 'recorded' | 'validated';
   language: string; // required language label or code
 }

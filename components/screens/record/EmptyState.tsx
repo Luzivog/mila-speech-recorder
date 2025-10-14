@@ -1,3 +1,4 @@
+import { useApp } from '@/contexts/AppContext';
 import * as Haptics from 'expo-haptics';
 import { FileText, Mic } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
@@ -9,6 +10,8 @@ interface EmptyStateProps {
 
 // A modern elegant empty state encouraging users to add text before recording
 export function EmptyState({ onPressGoToText }: EmptyStateProps) {
+  const { appState } = useApp();
+  const language = appState?.profile?.language ?? null;
   const pulse = useRef(new Animated.Value(0)).current;
   const scheme = useColorScheme();
 
@@ -50,7 +53,7 @@ export function EmptyState({ onPressGoToText }: EmptyStateProps) {
       <View style={[styles.bgCircleSmall, { backgroundColor: dark ? '#334155' : '#f1f5f9' }]} />
 
       <View style={styles.contentContainer}>
-        <Animated.View style={[styles.iconWrapper, { transform: [{ scale }], opacity, backgroundColor: dark ? '#1e293b' : '#f1f5f9' }]}> 
+        <Animated.View style={[styles.iconWrapper, { transform: [{ scale }], opacity, backgroundColor: dark ? '#1e293b' : '#f1f5f9' }]}>
           <Mic size={64} color={dark ? '#93c5fd' : '#1d3557'} />
         </Animated.View>
         <Text style={[styles.title, { color: dark ? '#f1f5f9' : '#1d3557' }]}>Ready to start recording?</Text>
@@ -59,10 +62,23 @@ export function EmptyState({ onPressGoToText }: EmptyStateProps) {
         </Text>
 
         <View style={styles.stepsContainer}>
-          <Step index={1} text="Go to the Text tab" dark={dark} />
-          <Step index={2} text="Paste or type your text" dark={dark} />
-          <Step index={3} text="Save & Parse to create lines" dark={dark} />
-            <Step index={4} text="Return here to record" dark={dark} />
+          {language ? (
+            <>
+              <Step index={1} text="Go to the Text tab" dark={dark} />
+              <Step index={2} text="Paste or type your text" dark={dark} />
+              <Step index={3} text="Save & Parse to create lines" dark={dark} />
+              <Step index={4} text="Return here to record" dark={dark} />
+            </>
+          ) : (
+            <>
+              <Step index={1} text="Go to the Profile tab" dark={dark} />
+              <Step index={2} text="Set speaker information" dark={dark} />
+              <Step index={3} text="Go to the Text tab" dark={dark} />
+              <Step index={4} text="Paste or type your text" dark={dark} />
+              <Step index={5} text="Save & Parse to create lines" dark={dark} />
+              <Step index={6} text="Return here to record" dark={dark} />
+            </>
+          )}
         </View>
 
         <TouchableOpacity
@@ -75,7 +91,7 @@ export function EmptyState({ onPressGoToText }: EmptyStateProps) {
           <FileText size={22} color="#fff" style={{ marginRight: 6 }} />
           <Text style={styles.ctaText}>Add Text to Begin</Text>
         </TouchableOpacity>
-  <Text style={[styles.helperNote, { color: dark ? '#64748b' : '#64748b' }]}>Need inspiration? Paste song lyrics, proverbs, or any clean text.</Text>
+        <Text style={[styles.helperNote, { color: dark ? '#64748b' : '#64748b' }]}>Need inspiration? Paste song lyrics, proverbs, or any clean text.</Text>
       </View>
     </View>
   );
@@ -84,7 +100,7 @@ export function EmptyState({ onPressGoToText }: EmptyStateProps) {
 function Step({ index, text, dark }: { index: number; text: string; dark?: boolean }) {
   return (
     <View style={styles.stepRow}>
-      <View style={[styles.stepBadge, { backgroundColor: dark ? '#334155' : '#1d3557' }]}> 
+      <View style={[styles.stepBadge, { backgroundColor: dark ? '#334155' : '#1d3557' }]}>
         <Text style={styles.stepBadgeText}>{index}</Text>
       </View>
       <Text style={[styles.stepText, { color: dark ? '#e2e8f0' : '#334155' }]}>{text}</Text>
