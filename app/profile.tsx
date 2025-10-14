@@ -196,7 +196,7 @@ export default function ProfileScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    {session && (
+                    {profile && (
                         <View style={styles.statsRow}>
                             <StatCard
                                 title="Recorded"
