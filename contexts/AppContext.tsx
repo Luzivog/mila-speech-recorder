@@ -17,10 +17,29 @@ interface AppContextType {
 
 const ensureSpeaker = (speaker?: Partial<SpeakerProfile> | null): SpeakerProfile => {
   const now = Date.now();
+  const parseAge = (value: unknown): number => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      const bounded = Math.max(0, Math.trunc(value));
+      return Math.min(120, bounded);
+    }
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      if (Number.isFinite(parsed)) {
+        const bounded = Math.max(0, parsed);
+        return Math.min(120, bounded);
+      }
+    }
+    return 0;
+  };
+
+  const genderValue = typeof speaker?.gender === 'string' ? speaker.gender.trim() : '';
+
   return {
     id: speaker?.id ?? uuidv4(),
     displayName: speaker?.displayName ?? '',
     localeHint: speaker?.localeHint,
+    age: parseAge(speaker?.age),
+    gender: genderValue,
     createdAt: speaker?.createdAt ?? now,
     updatedAt: speaker?.updatedAt ?? now,
   };

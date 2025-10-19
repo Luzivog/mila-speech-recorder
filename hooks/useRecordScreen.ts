@@ -180,6 +180,16 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
   const handleSave = useCallback(async () => {
     if (!session || !currentLine || !lastRecording?.uri || !appState) return;
 
+    const speakerAge = session.speaker.age;
+    const speakerGender = (session.speaker.gender ?? '').trim();
+    if (!speakerAge || speakerAge <= 0 || !speakerGender) {
+      Alert.alert(
+        'Profile Incomplete',
+        'Please update your profile with age and gender before uploading recordings.'
+      );
+      return;
+    }
+
     setIsUploading(true);
     setStep('uploading');
     try {
@@ -202,6 +212,8 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
         file,
         deviceId: appState.device.deviceId,
         speakerName: session.speaker.displayName,
+        speakerAge,
+        speakerGender,
         lineId: currentLine.id,
         lineIndex: session.currentIndex,
         lineText: currentLine.text,

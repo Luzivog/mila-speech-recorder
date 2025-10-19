@@ -17,6 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { v4 as uuidv4 } from 'uuid';
 import { DashboardHeader } from '../components/screens/dashboard/DashboardHeader';
 import { StatCard } from '../components/screens/dashboard/StatCard';
+import { AgeInput } from '../components/screens/profile/AgeInput';
+import { GenderSelect } from '../components/screens/profile/GenderSelect';
 import { LanguageInput } from '../components/screens/text/LanguageInput';
 import { SpeakerInput } from '../components/screens/text/SpeakerInput';
 import { useApp } from '../contexts/AppContext';
@@ -30,15 +32,32 @@ export default function ProfileScreen() {
     const profile = appState?.profile ?? null;
     const anim = useRef(new Animated.Value(0)).current;
 
+    const initialSpeaker = profile?.speaker ?? session?.speaker ?? null;
     const [speakerName, setSpeakerName] = useState(
-        profile?.speaker.displayName ?? session?.speaker.displayName ?? ''
+        initialSpeaker?.displayName ?? ''
     );
+    const [age, setAge] = useState(
+        initialSpeaker?.age && initialSpeaker.age > 0 ? String(initialSpeaker.age) : ''
+    );
+    const [gender, setGender] = useState(initialSpeaker?.gender ?? '');
     const [language, setLanguage] = useState(profile?.language ?? session?.language ?? '');
 
     useEffect(() => {
         const nextSpeakerName = profile?.speaker.displayName ?? session?.speaker.displayName ?? '';
         setSpeakerName(prev => (prev === nextSpeakerName ? prev : nextSpeakerName));
     }, [profile?.speaker.displayName, session?.speaker.displayName]);
+
+    useEffect(() => {
+        const nextAge = profile?.speaker.age ?? session?.speaker.age ?? 0;
+        const normalized = nextAge > 0 ? String(nextAge) : '';
+        setAge(prev => (prev === normalized ? prev : normalized));
+    }, [profile?.speaker.age, session?.speaker.age]);
+
+    useEffect(() => {
+        const nextGender = profile?.speaker.gender ?? session?.speaker.gender ?? '';
+        const normalized = nextGender.trim();
+        setGender(prev => (prev === normalized ? prev : normalized));
+    }, [profile?.speaker.gender, session?.speaker.gender]);
 
     useEffect(() => {
         const nextLanguage = profile?.language ?? session?.language ?? '';
@@ -88,27 +107,39 @@ export default function ProfileScreen() {
 
     const handleSaveProfile = async () => {
         const trimmedLanguage = language.trim();
+        const trimmedGender = gender.trim();
+        const parsedAge = parseInt(age.trim(), 10);
         if (!trimmedLanguage) {
             Alert.alert('Missing language', 'Please enter the language you will be recording.');
             return;
         }
 
+        if (!age.trim()) {
+            Alert.alert('Missing age', 'Please provide the speaker age.');
+            return;
+        }
+
+        if (Number.isNaN(parsedAge) || parsedAge <= 0 || parsedAge > 120) {
+            Alert.alert('Invalid age', 'Please enter a valid age between 1 and 120.');
+            return;
+        }
+
+        if (!trimmedGender) {
+            Alert.alert('Missing gender', 'Please select or enter a gender.');
+            return;
+        }
+
         try {
             const now = Date.now();
-            const baseSpeaker: SpeakerProfile = profile?.speaker
-                ? { ...profile.speaker }
-                : session?.speaker
-                    ? { ...session.speaker }
-                    : {
-                        id: uuidv4(),
-                        displayName: '',
-                        createdAt: now,
-                        updatedAt: now,
-                    };
+            const sourceSpeaker = profile?.speaker ?? session?.speaker ?? null;
 
             const updatedSpeaker: SpeakerProfile = {
-                ...baseSpeaker,
+                id: sourceSpeaker?.id ?? uuidv4(),
                 displayName: speakerName.trim(),
+                localeHint: sourceSpeaker?.localeHint,
+                age: parsedAge,
+                gender: trimmedGender,
+                createdAt: sourceSpeaker?.createdAt ?? now,
                 updatedAt: now,
             };
 
@@ -129,12 +160,26 @@ export default function ProfileScreen() {
     const hasChanges = useMemo(() => {
         const originalName = profile?.speaker.displayName ?? session?.speaker.displayName ?? '';
         const originalLanguage = profile?.language ?? session?.language ?? '';
-        return (
-            originalName.trim() !== speakerName.trim() || originalLanguage.trim() !== language.trim()
-        );
-    }, [language, profile?.language, profile?.speaker.displayName, session?.language, session?.speaker.displayName, speakerName]);
+        const originalAge = profile?.speaker.age ?? session?.speaker.age ?? 0;
+        const originalGender = profile?.speaker.gender ?? session?.speaker.gender ?? '';
 
-    const disableSave = !language.trim() || !hasChanges;
+        const currentName = speakerName.trim();
+        const currentLanguage = language.trim();
+        const currentAge = age.trim();
+        const currentGender = gender.trim();
+
+        const originalAgeString = originalAge > 0 ? String(originalAge) : '';
+        const originalGenderTrimmed = originalGender.trim();
+
+        return (
+            originalName.trim() !== currentName ||
+            originalLanguage.trim() !== currentLanguage ||
+            originalAgeString !== currentAge ||
+            originalGenderTrimmed !== currentGender
+        );
+    }, [age, gender, language, profile?.language, profile?.speaker.age, profile?.speaker.displayName, profile?.speaker.gender, session?.language, session?.speaker.age, session?.speaker.displayName, session?.speaker.gender, speakerName]);
+
+    const disableSave = !language.trim() || !age.trim() || !gender.trim() || !hasChanges;
     const scale = anim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] });
     const glowOpacity = anim.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0.65] });
     const screenBackground = dark ? '#0f172a' : '#f8fafc';
@@ -167,9 +212,13 @@ export default function ProfileScreen() {
                     <DashboardHeader speakerName={session?.speaker.displayName} />
                     <View style={[styles.profileCard, { backgroundColor: dark ? '#1e293b' : '#ffffff' }]}>
                         <Text style={[styles.sectionTitle, { color: dark ? '#f1f5f9' : '#1d3557' }]}>Profile</Text>
-                        <Text style={[styles.sectionSubtitle, { color: dark ? '#94a3b8' : '#64748b' }]}>Update your speaker identity and preferred language.</Text>
+                        <Text style={[styles.sectionSubtitle, { color: dark ? '#94a3b8' : '#64748b' }]}>Update your speaker identity, age, gender, and preferred language.</Text>
 
                         <SpeakerInput value={speakerName} onChangeText={setSpeakerName} />
+
+                        <AgeInput value={age} onChangeText={setAge} />
+
+                        <GenderSelect value={gender} onChange={setGender} />
 
                         <LanguageInput value={language} onChangeText={setLanguage} />
 

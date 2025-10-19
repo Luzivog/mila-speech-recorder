@@ -16,7 +16,27 @@ const supabase = createClient(supabaseUrl ?? '', supabaseAnonKey ?? '');
 
 export class SupabaseService {
   static async uploadRecording(request: UploadRequest): Promise<UploadResponse> {
-    const { file, deviceId, speakerName, lineId, lineIndex, lineText, durationSec, language } = request;
+    const {
+      file,
+      deviceId,
+      speakerName,
+      speakerAge,
+      speakerGender,
+      lineId,
+      lineIndex,
+      lineText,
+      durationSec,
+      language,
+    } = request;
+
+    if (!Number.isFinite(speakerAge) || speakerAge <= 0) {
+      throw new Error('Invalid speaker age provided for upload.');
+    }
+
+    const normalizedGender = speakerGender.trim();
+    if (!normalizedGender) {
+      throw new Error('Missing speaker gender for upload.');
+    }
 
     // Create FormData for multipart upload
     const formData = new FormData();
@@ -26,6 +46,8 @@ export class SupabaseService {
     formData.append('file', file as any);
     formData.append('deviceId', deviceId);
     formData.append('speakerName', speakerName);
+  formData.append('speakerAge', Math.trunc(speakerAge).toString());
+  formData.append('speakerGender', normalizedGender);
     formData.append('lineId', lineId);
     formData.append('lineIndex', lineIndex.toString());
     formData.append('lineText', lineText);

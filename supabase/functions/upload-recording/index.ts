@@ -24,14 +24,16 @@ Deno.serve(async (req: Request) => {
     const file = formData.get('file') as File | null
     const deviceId = formData.get('deviceId') as string | null
     const rawSpeakerName = formData.get('speakerName') as string | null
-    const lineId = formData.get('lineId') as string | null
+  const speakerAgeStr = formData.get('speakerAge') as string | null
+  const speakerGenderRaw = formData.get('speakerGender') as string | null
+  const lineId = formData.get('lineId') as string | null
     const lineIndexStr = formData.get('lineIndex') as string | null
     const lineText = (formData.get('lineText') as string | null) ?? ''
     const durationSecStr = formData.get('durationSec') as string | null
     const languageRaw = (formData.get('language') as string | null) ?? null
 
     // Save required fields (null/undefined only)
-    if (!file || deviceId == null || lineId == null || lineIndexStr == null || durationSecStr == null) {
+    if (!file || deviceId == null || speakerAgeStr == null || speakerGenderRaw == null || lineId == null || lineIndexStr == null || durationSecStr == null) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -48,10 +50,26 @@ Deno.serve(async (req: Request) => {
 
     // Normalize speakerName (allow empty; fallback to 'default')
     const speakerName = (rawSpeakerName ?? '').trim() || 'default'
+    const speakerGender = (speakerGenderRaw ?? '').trim()
+
+    if (!speakerGender) {
+      return new Response(JSON.stringify({ error: 'Missing required field: speakerGender' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (speakerGender.length > 120) {
+      return new Response(JSON.stringify({ error: 'Invalid speakerGender (too long)' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
 
     // Save and parse values
     const lineIndex = parseInt(lineIndexStr, 10)
     const durationSec = parseFloat(durationSecStr)
+    const speakerAge = parseInt(speakerAgeStr, 10)
 
     if (isNaN(lineIndex) || lineIndex < 0) {
       return new Response(JSON.stringify({ error: 'Invalid lineIndex' }), {
@@ -62,6 +80,13 @@ Deno.serve(async (req: Request) => {
 
     if (isNaN(durationSec) || durationSec < 0 || durationSec > 120) {
       return new Response(JSON.stringify({ error: 'Invalid durationSec (must be 0-120)' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (isNaN(speakerAge) || speakerAge <= 0 || speakerAge > 120) {
+      return new Response(JSON.stringify({ error: 'Invalid speakerAge (must be 1-120)' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       })
@@ -121,7 +146,10 @@ Deno.serve(async (req: Request) => {
       .from('speakers')
       .upsert({
         device_id: deviceId,
-        display_name: speakerName
+        display_name: speakerName,
+        age: speakerAge,
+        gender: speakerGender,
+        updated_at: new Date().toISOString()
       }, {
         onConflict: 'device_id,display_name'
       })

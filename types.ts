@@ -9,6 +9,8 @@ export interface SpeakerProfile {
   id: string; // local UUID (not a DB id)
   displayName: string; // may be empty; slug becomes 'default'
   localeHint?: string; // optional string such as 'yo' or 'yo-NG'
+  age: number; // required speaker age (years)
+  gender: string; // required self-identified gender label
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
 }
@@ -94,6 +96,8 @@ export interface UploadRequest {
   file: UploadFilePart;
   deviceId: string;
   speakerName: string;
+  speakerAge: number;
+  speakerGender: string;
   lineId: string;
   lineIndex: number;
   lineText: string;
