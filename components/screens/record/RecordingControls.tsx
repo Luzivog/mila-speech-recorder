@@ -2,15 +2,14 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RecordButton } from './RecordButton';
 import { StoppedControls } from './StoppedControls';
-import { UploadingIndicator } from './UploadingIndicator';
 
-type RecordingStep = 'ready' | 'recording' | 'stopped' | 'uploading';
+type RecordingStep = 'ready' | 'recording' | 'stopped';
 
 interface RecordingControlsProps {
   step: RecordingStep;
   buttonText: string;
   buttonColor: string;
-  isUploading: boolean;
+  isSaving: boolean;
   onRecordPress: () => void;
   onCancel: () => void;
   onSave: () => void;
@@ -22,7 +21,7 @@ export function RecordingControls({
   step,
   buttonText,
   buttonColor,
-  isUploading,
+  isSaving,
   onRecordPress,
   onCancel,
   onSave,
@@ -45,14 +44,9 @@ export function RecordingControls({
             onCancel={onCancel}
             onTogglePlayback={onTogglePlayback}
             onSave={onSave}
-            isUploading={isUploading}
+            isSaving={isSaving}
             isPlaying={isPlaying}
           />
-        </View>
-      )}
-      {step === 'uploading' && (
-        <View style={{ marginTop: 16 }}>
-          <UploadingIndicator />
         </View>
       )}
     </View>

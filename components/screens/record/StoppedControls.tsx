@@ -6,11 +6,11 @@ interface StoppedControlsProps {
   onCancel: () => void;
   onTogglePlayback: () => void;
   onSave: () => void;
-  isUploading: boolean;
+  isSaving: boolean;
   isPlaying: boolean;
 }
 
-export function StoppedControls({ onCancel, onTogglePlayback, onSave, isUploading, isPlaying }: StoppedControlsProps) {
+export function StoppedControls({ onCancel, onTogglePlayback, onSave, isSaving, isPlaying }: StoppedControlsProps) {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   return (
@@ -43,14 +43,14 @@ export function StoppedControls({ onCancel, onTogglePlayback, onSave, isUploadin
 
       <TouchableOpacity
         accessibilityRole="button"
-        accessibilityLabel="Save and upload recording"
-        style={[styles.saveButton, { backgroundColor: dark ? '#10b981' : '#16a34a' }, isUploading && { opacity: 0.6 } ]}
+        accessibilityLabel="Save recording"
+        style={[styles.saveButton, { backgroundColor: dark ? '#10b981' : '#16a34a' }, isSaving && { opacity: 0.6 } ]}
         onPress={onSave}
-        disabled={isUploading}
+        disabled={isSaving}
         activeOpacity={0.85}
       >
   <UploadCloud size={20} color="#fff" style={{ marginRight: 8 }} />
-        <Text style={styles.saveButtonText}>{isUploading ? 'Uploading...' : 'Save'}</Text>
+        <Text style={styles.saveButtonText}>{isSaving ? 'Saving...' : 'Save'}</Text>
       </TouchableOpacity>
     </View>
   );

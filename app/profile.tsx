@@ -93,7 +93,7 @@ export default function ProfileScreen() {
         let recordedCount = 0;
         let totalDurationSec = 0;
         Object.values(recordings).forEach(recording => {
-            if (recording.status === 'recorded' || recording.status === 'saved') {
+            if (recording.status === 'recorded' || recording.status === 'saved' || recording.status === 'uploaded') {
                 recordedCount++;
                 totalDurationSec += recording.durationSec;
             }

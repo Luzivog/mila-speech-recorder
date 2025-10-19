@@ -25,6 +25,8 @@ export function HistoryItem({
 }: HistoryItemProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'uploaded':
+        return '#0ea5e9';
       case 'saved':
         return '#28a745';
       case 'recorded':
@@ -33,6 +35,8 @@ export function HistoryItem({
         return '#6c757d';
     }
   };
+
+  const formatStatus = (status: string) => status.charAt(0).toUpperCase() + status.slice(1);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -47,7 +51,7 @@ export function HistoryItem({
           {lineText}
         </Text>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(recording.status) }]}>
-          <Text style={styles.statusText}>{recording.status}</Text>
+          <Text style={styles.statusText}>{formatStatus(recording.status)}</Text>
         </View>
       </View>
 

@@ -26,7 +26,7 @@ export interface LineItem {
   text: string; // non-empty trimmed string
 }
 
-export type RecordingStatus = 'none' | 'recorded' | 'saved';
+export type RecordingStatus = 'none' | 'recorded' | 'saved' | 'uploaded';
 
 export interface LocalRecording {
   lineId: string; // LineItem.id
@@ -36,6 +36,10 @@ export interface LocalRecording {
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
   ext: string; // fixed string 'm4a'
+  filename: string; // persisted filename for background uploads
+  mime: string; // stored mime type for upload reconstruction
+  uploadError?: string | null; // last upload error (if any)
+  lastUploadAttempt?: number | null; // epoch ms of last attempt
 }
 
 export interface RemoteRecordingRef {

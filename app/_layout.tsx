@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { FileText, History, Mic, UserCircle } from 'lucide-react-native';
 import { useEffect } from "react";
+import { UploadManager } from "../components/UploadManager";
 import { AppProvider } from "../contexts/AppContext";
 
 SplashScreen.preventAutoHideAsync().catch(() => null);
@@ -14,6 +15,7 @@ export default function RootLayout() {
 
   return (
     <AppProvider>
+      <UploadManager />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: '#007AFF',

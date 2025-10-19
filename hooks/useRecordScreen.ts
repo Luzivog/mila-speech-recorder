@@ -1,18 +1,17 @@
 // useRecordScreenLogic.ts
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, useColorScheme } from 'react-native';
+import { Alert, useColorScheme } from 'react-native';
 import { useApp } from '../contexts/AppContext';
-import { SupabaseService } from '../services/SupabaseService';
-import { RecordingStatus } from '../types';
+import { RecordingItem } from '../types';
 import { usePlayback } from './usePlayback'; // NEW hook shape
 import { useRecording } from './useRecording'; // NEW hook shape
 
-export type RecordingStep = 'ready' | 'recording' | 'stopped' | 'uploading';
+export type RecordingStep = 'ready' | 'recording' | 'stopped';
 
 interface UseRecordScreenLogicReturn {
   step: RecordingStep;
-  isUploading: boolean;
+  isSaving: boolean;
   progressText: string;
   currentLine: { id: string; text: string } | undefined;
   buttonText: string;
@@ -45,7 +44,7 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
   const { isPlaying, play, pause, stop: stopPlayback } = usePlayback(lastRecording?.uri ?? null);
 
   const [step, setStep] = useState<RecordingStep>('ready');
-  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
 
@@ -73,6 +72,7 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
         if (isPlaying) await stopPlayback();
         await start();
         setStep('recording');
+        setIsSaving(false);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } catch (e) {
         console.error('Error starting recording:', e);
@@ -96,17 +96,26 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
           return;
         }
 
+        const existingRecording = session.recordings[currentLine.id] as RecordingItem | undefined;
+
+        const newRecording: RecordingItem = {
+          ...existingRecording,
+          lineId: currentLine.id,
+          fileUri: result.uri,
+          durationSec: result.durationSec,
+          status: 'recorded',
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          ext: result.ext, // platform-correct extension
+          filename: result.filename,
+          mime: result.mime,
+          uploadError: null,
+          lastUploadAttempt: null,
+        };
+
         const updatedRecordings = {
           ...session.recordings,
-          [currentLine.id]: {
-            lineId: currentLine.id,
-            fileUri: result.uri,
-            durationSec: result.durationSec,
-            status: 'recorded' as RecordingStatus,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            ext: result.ext, // platform-correct extension
-          },
+          [currentLine.id]: newRecording,
         };
         const updatedSession = {
           ...session,
@@ -128,6 +137,7 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
     await cancel();
     setLastRecording(null);
     setStep('ready');
+    setIsSaving(false);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [cancel]);
 
@@ -141,17 +151,23 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
   }, [isPlaying, play, pause, lastRecording?.uri]);
 
   const advanceToNextLine = useCallback(
-    async (savedStatusUpdate: Partial<{ remote: any }>) => {
+    async () => {
       if (!session?.lines?.length || !currentLine) return;
+
+      const existing = session.recordings[currentLine.id] as RecordingItem | undefined;
+      if (!existing) return;
+
+      const nextRecording: RecordingItem = {
+        ...existing,
+        status: 'saved',
+        updatedAt: Date.now(),
+        uploadError: null,
+        lastUploadAttempt: null,
+      };
 
       const updatedRecordings = {
         ...session.recordings,
-        [currentLine.id]: {
-          ...session.recordings[currentLine.id],
-          status: 'saved' as RecordingStatus,
-          updatedAt: Date.now(),
-          ...savedStatusUpdate,
-        },
+        [currentLine.id]: nextRecording,
       };
 
       let nextIndex = (session.currentIndex ?? 0) + 1;
@@ -173,78 +189,20 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
     [session, currentLine, updateSession]
   );
 
-  const handleSaveLocally = useCallback(async () => {
-    await advanceToNextLine({});
-  }, [advanceToNextLine]);
-
   const handleSave = useCallback(async () => {
-    if (!session || !currentLine || !lastRecording?.uri || !appState) return;
+    if (!session || !currentLine || !lastRecording?.uri) return;
 
-    const speakerAge = session.speaker.age;
-    const speakerGender = (session.speaker.gender ?? '').trim();
-    if (!speakerAge || speakerAge <= 0 || !speakerGender) {
-      Alert.alert(
-        'Profile Incomplete',
-        'Please update your profile with age and gender before uploading recordings.'
-      );
-      return;
-    }
-
-    setIsUploading(true);
-    setStep('uploading');
+    setIsSaving(true);
     try {
-      // Build a cross-platform file part for FormData
-      let file: File | { uri: string; name: string; type: string };
-      if (Platform.OS === 'web') {
-        const response = await fetch(lastRecording.uri);
-        const blob = await response.blob();
-        file = new File([blob], lastRecording.filename, { type: lastRecording.mime });
-      } else {
-        // React Native expects a descriptor with a file URI
-        file = {
-          uri: lastRecording.uri,
-          name: lastRecording.filename,
-          type: lastRecording.mime,
-        };
-      }
-
-      const uploadResponse = await SupabaseService.uploadRecording({
-        file,
-        deviceId: appState.device.deviceId,
-        speakerName: session.speaker.displayName,
-        speakerAge,
-        speakerGender,
-        lineId: currentLine.id,
-        lineIndex: session.currentIndex,
-        lineText: currentLine.text,
-        durationSec: lastRecording.durationSec,
-        language: session.language,
-      });
-
-      await advanceToNextLine({
-        remote: {
-          storageKey: uploadResponse.storageKey,
-          publicUrl: uploadResponse.publicUrl,
-          speakerId: uploadResponse.speakerId,
-          utteranceId: uploadResponse.utteranceId,
-          recordingId: uploadResponse.recordingId,
-        },
-      });
+      await advanceToNextLine();
     } catch (error) {
-      console.error('Error validating recording:', error);
-      Alert.alert(
-        'Upload Failed',
-        'Failed to upload recording to server. You can try again or continue with local storage only.',
-        [
-          { text: 'Try Again', onPress: () => handleSave() },
-          { text: 'Continue Locally', onPress: handleSaveLocally },
-        ]
-      );
+      console.error('Error saving recording locally:', error);
+      Alert.alert('Save Failed', 'Unable to store this recording locally right now. Please try again.');
       setStep('stopped');
     } finally {
-      setIsUploading(false);
+      setIsSaving(false);
     }
-  }, [session, currentLine, lastRecording, appState, advanceToNextLine, handleSaveLocally]);
+  }, [session, currentLine, lastRecording, advanceToNextLine]);
 
   const buttonText = useMemo(() => {
     switch (step) {
@@ -254,8 +212,6 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
         return `Recording... ${durationSec.toFixed(1)}s`;
       case 'stopped':
         return 'Re-record';
-      case 'uploading':
-        return 'Uploading...';
       default:
         return 'Start Recording';
     }
@@ -265,8 +221,6 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
     switch (step) {
       case 'recording':
         return '#ff4444';
-      case 'uploading':
-        return '#666';
       default:
         return '#007aff';
     }
@@ -274,7 +228,7 @@ export function useRecordScreenLogic(): UseRecordScreenLogicReturn {
 
   return {
     step,
-    isUploading,
+    isSaving,
     progressText,
     currentLine,
     buttonText,

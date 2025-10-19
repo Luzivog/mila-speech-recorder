@@ -21,7 +21,7 @@ export default function RecordScreen() {
     step,
     buttonText,
     buttonColor,
-    isUploading,
+  isSaving,
     handleRecordPress,
     handleCancel,
     handleSave,
@@ -60,7 +60,7 @@ export default function RecordScreen() {
             step={step}
             buttonText={buttonText}
             buttonColor={buttonColor}
-            isUploading={isUploading}
+            isSaving={isSaving}
             onRecordPress={handleRecordPress}
             onCancel={handleCancel}
             onSave={handleSave}

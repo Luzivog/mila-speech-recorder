@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import { ActiveSession, AppState, DeviceProfile, SpeakerProfile, UserProfile } from '../types';
+import { ActiveSession, AppState, DeviceProfile, RecordingItem, SpeakerProfile, UserProfile } from '../types';
 
 const APP_STATE_KEY = '@mila_speech_recorder_app_state';
 
@@ -51,9 +51,34 @@ const ensureSession = (
 ): ActiveSession | null => {
   if (!session) return null;
   const speakerSource = session.speaker ?? fallbackSpeaker ?? null;
+  const normalizedRecordings: Record<string, RecordingItem> = Object.fromEntries(
+    Object.entries(session.recordings ?? {}).map(([key, value]) => {
+      const ext = value?.ext?.startsWith('.') ? value.ext : value?.ext ? `.${value.ext}` : '.m4a';
+      const filename = value?.filename && value.filename.trim().length > 0
+        ? value.filename
+        : `rec-${value?.lineId ?? key}${ext}`;
+      const mime = value?.mime && value.mime.trim().length > 0
+        ? value.mime
+        : ext === '.webm'
+          ? 'audio/webm'
+          : 'audio/mp4';
+
+      const normalized: RecordingItem = {
+        ...value,
+        ext,
+        filename,
+        mime,
+        uploadError: value?.uploadError ?? null,
+        lastUploadAttempt: value?.lastUploadAttempt ?? null,
+      } as RecordingItem;
+
+      return [key, normalized];
+    })
+  );
   return {
     ...session,
     speaker: ensureSpeaker(speakerSource),
+    recordings: normalizedRecordings,
   };
 };
 
