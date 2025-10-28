@@ -17,6 +17,7 @@ const config: ExpoConfig = {
     },
   },
   android: {
+    package: 'com.luzivog.milaspeechrecorder',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -52,11 +53,16 @@ const config: ExpoConfig = {
       },
     ],
     ['expo-font', { fonts: ['./assets/fonts/WorkSans.ttf'] }],
-    'expo-asset'
+    'expo-asset',
   ],
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
+  },
+  extra: {
+    eas: {
+      projectId: '2c861272-e23a-49b6-b2e0-26a6a0275dae',
+    },
   },
 };
 
