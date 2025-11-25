@@ -124,11 +124,12 @@ export function UploadManager() {
 
       const age = session.speaker.age;
       const gender = (session.speaker.gender ?? '').trim();
+      const projectId = (session.speaker.projectId ?? '').trim();
 
-      if (!age || age <= 0 || !gender) {
+      if (!age || age <= 0 || !gender || !projectId) {
         await updateRecording(lineId, (current) => ({
           ...current,
-          uploadError: 'Profile incomplete. Update age and gender to sync.',
+          uploadError: 'Profile incomplete. Update age, gender, and project ID to sync.',
           lastUploadAttempt: attemptTime,
         }));
         return;
@@ -207,6 +208,7 @@ export function UploadManager() {
           speakerName: session.speaker.displayName,
           speakerAge: age,
           speakerGender: gender,
+          projectId: projectId,
           lineId: line.id,
           lineIndex: line.index,
           lineText: line.text,

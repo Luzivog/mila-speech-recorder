@@ -11,6 +11,7 @@ export interface SpeakerProfile {
   localeHint?: string; // optional string such as 'yo' or 'yo-NG'
   age: number; // required speaker age (years)
   gender: string; // required self-identified gender label
+  projectId: string; // required project identifier
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
 }
@@ -102,6 +103,7 @@ export interface UploadRequest {
   speakerName: string;
   speakerAge: number;
   speakerGender: string;
+  projectId: string;
   lineId: string;
   lineIndex: number;
   lineText: string;

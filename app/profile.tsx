@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { Clock3, Mic } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Alert,
     Animated,
@@ -19,9 +19,11 @@ import { DashboardHeader } from '../components/screens/dashboard/DashboardHeader
 import { StatCard } from '../components/screens/dashboard/StatCard';
 import { AgeInput } from '../components/screens/profile/AgeInput';
 import { GenderSelect } from '../components/screens/profile/GenderSelect';
+import { ProjectIdInput } from '../components/screens/profile/ProjectIdInput';
 import { LanguageInput } from '../components/screens/text/LanguageInput';
 import { SpeakerInput } from '../components/screens/text/SpeakerInput';
 import { useApp } from '../contexts/AppContext';
+import { SupabaseService } from '../services/SupabaseService';
 import { AppStats, SpeakerProfile, UserProfile } from '../types';
 
 export default function ProfileScreen() {
@@ -41,6 +43,9 @@ export default function ProfileScreen() {
     );
     const [gender, setGender] = useState(initialSpeaker?.gender ?? '');
     const [language, setLanguage] = useState(profile?.language ?? session?.language ?? '');
+    const [projectId, setProjectId] = useState(initialSpeaker?.projectId ?? '');
+    const [validProjectIds, setValidProjectIds] = useState<string[]>([]);
+    const [isValidatingProjectId, setIsValidatingProjectId] = useState(false);
 
     useEffect(() => {
         const nextSpeakerName = profile?.speaker.displayName ?? session?.speaker.displayName ?? '';
@@ -63,6 +68,42 @@ export default function ProfileScreen() {
         const nextLanguage = profile?.language ?? session?.language ?? '';
         setLanguage(prev => (prev === nextLanguage ? prev : nextLanguage));
     }, [profile?.language, session?.language]);
+
+    useEffect(() => {
+        const nextProjectId = profile?.speaker.projectId ?? session?.speaker.projectId ?? '';
+        setProjectId(prev => (prev === nextProjectId ? prev : nextProjectId));
+    }, [profile?.speaker.projectId, session?.speaker.projectId]);
+
+    // Fetch valid project IDs on mount
+    useEffect(() => {
+        let cancelled = false;
+        const fetchProjects = async () => {
+            setIsValidatingProjectId(true);
+            try {
+                const ids = await SupabaseService.fetchProjectIds();
+                if (!cancelled) {
+                    setValidProjectIds(ids);
+                }
+            } catch (error) {
+                console.error('Failed to fetch project IDs:', error);
+            } finally {
+                if (!cancelled) {
+                    setIsValidatingProjectId(false);
+                }
+            }
+        };
+        fetchProjects();
+        return () => { cancelled = true; };
+    }, []);
+
+    const isProjectIdValid = useMemo(() => {
+        const trimmed = projectId.trim().toLowerCase();
+        return trimmed.length > 0 && validProjectIds.map(id => id.toLowerCase()).includes(trimmed);
+    }, [projectId, validProjectIds]);
+
+    const handleProjectIdChange = useCallback((text: string) => {
+        setProjectId(text.toLowerCase());
+    }, []);
 
     useEffect(() => {
         const loop = Animated.loop(
@@ -129,6 +170,17 @@ export default function ProfileScreen() {
             return;
         }
 
+        const trimmedProjectId = projectId.trim().toLowerCase();
+        if (!trimmedProjectId) {
+            Alert.alert('Missing project ID', 'Please enter a project ID.');
+            return;
+        }
+
+        if (!isProjectIdValid) {
+            Alert.alert('Invalid project ID', 'The project ID you entered is not valid. Please enter a valid project ID.');
+            return;
+        }
+
         try {
             const now = Date.now();
             const sourceSpeaker = profile?.speaker ?? session?.speaker ?? null;
@@ -139,6 +191,7 @@ export default function ProfileScreen() {
                 localeHint: sourceSpeaker?.localeHint,
                 age: parsedAge,
                 gender: trimmedGender,
+                projectId: trimmedProjectId,
                 createdAt: sourceSpeaker?.createdAt ?? now,
                 updatedAt: now,
             };
@@ -162,11 +215,13 @@ export default function ProfileScreen() {
         const originalLanguage = profile?.language ?? session?.language ?? '';
         const originalAge = profile?.speaker.age ?? session?.speaker.age ?? 0;
         const originalGender = profile?.speaker.gender ?? session?.speaker.gender ?? '';
+        const originalProjectId = profile?.speaker.projectId ?? session?.speaker.projectId ?? '';
 
         const currentName = speakerName.trim();
         const currentLanguage = language.trim();
         const currentAge = age.trim();
         const currentGender = gender.trim();
+        const currentProjectId = projectId.trim();
 
         const originalAgeString = originalAge > 0 ? String(originalAge) : '';
         const originalGenderTrimmed = originalGender.trim();
@@ -175,11 +230,12 @@ export default function ProfileScreen() {
             originalName.trim() !== currentName ||
             originalLanguage.trim() !== currentLanguage ||
             originalAgeString !== currentAge ||
-            originalGenderTrimmed !== currentGender
+            originalGenderTrimmed !== currentGender ||
+            originalProjectId.trim() !== currentProjectId
         );
-    }, [age, gender, language, profile?.language, profile?.speaker.age, profile?.speaker.displayName, profile?.speaker.gender, session?.language, session?.speaker.age, session?.speaker.displayName, session?.speaker.gender, speakerName]);
+    }, [age, gender, language, projectId, profile?.language, profile?.speaker.age, profile?.speaker.displayName, profile?.speaker.gender, profile?.speaker.projectId, session?.language, session?.speaker.age, session?.speaker.displayName, session?.speaker.gender, session?.speaker.projectId, speakerName]);
 
-    const disableSave = !language.trim() || !age.trim() || !gender.trim() || !hasChanges;
+    const disableSave = !language.trim() || !age.trim() || !gender.trim() || !projectId.trim() || !isProjectIdValid || !hasChanges;
     const scale = anim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] });
     const glowOpacity = anim.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0.65] });
     const screenBackground = dark ? '#0f172a' : '#f8fafc';
@@ -221,6 +277,13 @@ export default function ProfileScreen() {
                         <GenderSelect value={gender} onChange={setGender} />
 
                         <LanguageInput value={language} onChangeText={setLanguage} />
+
+                        <ProjectIdInput
+                            value={projectId}
+                            onChangeText={handleProjectIdChange}
+                            isValid={isProjectIdValid}
+                            isValidating={isValidatingProjectId}
+                        />
 
                         <TouchableOpacity
                             style={[

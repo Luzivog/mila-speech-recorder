@@ -26,6 +26,7 @@ Deno.serve(async (req: Request) => {
     const rawSpeakerName = formData.get('speakerName') as string | null
   const speakerAgeStr = formData.get('speakerAge') as string | null
   const speakerGenderRaw = formData.get('speakerGender') as string | null
+  const projectIdRaw = formData.get('projectId') as string | null
   const lineId = formData.get('lineId') as string | null
     const lineIndexStr = formData.get('lineIndex') as string | null
     const lineText = (formData.get('lineText') as string | null) ?? ''
@@ -33,7 +34,7 @@ Deno.serve(async (req: Request) => {
     const languageRaw = (formData.get('language') as string | null) ?? null
 
     // Save required fields (null/undefined only)
-    if (!file || deviceId == null || speakerAgeStr == null || speakerGenderRaw == null || lineId == null || lineIndexStr == null || durationSecStr == null) {
+    if (!file || deviceId == null || speakerAgeStr == null || speakerGenderRaw == null || projectIdRaw == null || lineId == null || lineIndexStr == null || durationSecStr == null) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -51,9 +52,17 @@ Deno.serve(async (req: Request) => {
     // Normalize speakerName (allow empty; fallback to 'default')
     const speakerName = (rawSpeakerName ?? '').trim() || 'default'
     const speakerGender = (speakerGenderRaw ?? '').trim()
+    const projectId = (projectIdRaw ?? '').trim()
 
     if (!speakerGender) {
       return new Response(JSON.stringify({ error: 'Missing required field: speakerGender' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (!projectId) {
+      return new Response(JSON.stringify({ error: 'Missing required field: projectId' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       })
@@ -149,6 +158,7 @@ Deno.serve(async (req: Request) => {
         display_name: speakerName,
         age: speakerAge,
         gender: speakerGender,
+        project_id: projectId,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'device_id,display_name'

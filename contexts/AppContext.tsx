@@ -33,6 +33,7 @@ const ensureSpeaker = (speaker?: Partial<SpeakerProfile> | null): SpeakerProfile
   };
 
   const genderValue = typeof speaker?.gender === 'string' ? speaker.gender.trim() : '';
+  const projectIdValue = typeof speaker?.projectId === 'string' ? speaker.projectId.trim() : '';
 
   return {
     id: speaker?.id ?? uuidv4(),
@@ -40,6 +41,7 @@ const ensureSpeaker = (speaker?: Partial<SpeakerProfile> | null): SpeakerProfile
     localeHint: speaker?.localeHint,
     age: parseAge(speaker?.age),
     gender: genderValue,
+    projectId: projectIdValue,
     createdAt: speaker?.createdAt ?? now,
     updatedAt: speaker?.updatedAt ?? now,
   };

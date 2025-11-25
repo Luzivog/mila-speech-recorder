@@ -22,6 +22,7 @@ export class SupabaseService {
       speakerName,
       speakerAge,
       speakerGender,
+      projectId,
       lineId,
       lineIndex,
       lineText,
@@ -38,6 +39,11 @@ export class SupabaseService {
       throw new Error('Missing speaker gender for upload.');
     }
 
+    const normalizedProjectId = projectId.trim();
+    if (!normalizedProjectId) {
+      throw new Error('Missing project ID for upload.');
+    }
+
     // Create FormData for multipart upload
     const formData = new FormData();
     // React Native FormData requires { uri, name, type } for files.
@@ -46,8 +52,9 @@ export class SupabaseService {
     formData.append('file', file as any);
     formData.append('deviceId', deviceId);
     formData.append('speakerName', speakerName);
-  formData.append('speakerAge', Math.trunc(speakerAge).toString());
-  formData.append('speakerGender', normalizedGender);
+    formData.append('speakerAge', Math.trunc(speakerAge).toString());
+    formData.append('speakerGender', normalizedGender);
+    formData.append('projectId', normalizedProjectId);
     formData.append('lineId', lineId);
     formData.append('lineIndex', lineIndex.toString());
     formData.append('lineText', lineText);
@@ -130,5 +137,19 @@ export class SupabaseService {
     } catch {
       return false;
     }
+  }
+
+  // Fetch all valid project IDs from the database
+  static async fetchProjectIds(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id');
+
+    if (error) {
+      console.error('Failed to fetch project IDs:', error);
+      throw new Error(`Failed to fetch project IDs: ${error.message}`);
+    }
+
+    return (data ?? []).map((row: { id: string }) => row.id);
   }
 }
