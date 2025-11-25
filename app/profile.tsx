@@ -12,7 +12,6 @@ import {
     View,
     useColorScheme,
 } from 'react-native';
-import 'react-native-get-random-values';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { v4 as uuidv4 } from 'uuid';
 import { DashboardHeader } from '../components/screens/dashboard/DashboardHeader';

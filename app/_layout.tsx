@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { FileText, History, Mic, UserCircle } from 'lucide-react-native';

@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { ActiveSession, AppState, DeviceProfile, RecordingItem, SpeakerProfile, UserProfile } from '../types';
 

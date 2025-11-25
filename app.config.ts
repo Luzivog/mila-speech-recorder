@@ -1,5 +1,4 @@
 import type { ExpoConfig } from '@expo/config';
-import 'dotenv/config';
 
 const config: ExpoConfig = {
   name: 'mila-speech-recorder',
