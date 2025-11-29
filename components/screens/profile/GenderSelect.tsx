@@ -10,15 +10,6 @@ interface GenderSelectProps {
 const GENDER_OPTIONS = [
   'Female',
   'Male',
-  'Non-binary',
-  'Transgender',
-  'Genderqueer',
-  'Genderfluid',
-  'Agender',
-  'Two-Spirit',
-  'Intersex',
-  'Questioning',
-  'Prefer not to say',
 ];
 
 export function GenderSelect({ value, onChange }: GenderSelectProps) {
